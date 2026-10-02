@@ -1,0 +1,61 @@
+# ===========================================================================
+# Local, full-fat stack: Qdrant + Atlas. One command from a clean machine.
+#     docker compose up --build
+#     open http://localhost:8000
+# ===========================================================================
+
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.13.4
+    container_name: atlas-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"   # REST + web dashboard at http://localhost:6333/dashboard
+      - "6334:6334"   # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__ENABLE_CORS: "true"
+      QDRANT__LOG_LEVEL: "WARN"
+    healthcheck:
+      # The Qdrant image is distroless-ish; the bundled entrypoint binary can
+      # answer for itself, so probe over TCP rather than assuming curl exists.
+      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/localhost/6333' || exit 1"]
+      interval: 10s
+      timeout: 4s
+      retries: 12
+      start_period: 15s
+
+  atlas:
+    build:
+      context: .
+      args:
+        BUILD_PROFILE: ${BUILD_PROFILE:-full}
+    container_name: atlas-app
+    restart: unless-stopped
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    environment:
+      VECTOR_BACKEND: qdrant
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_COLLECTION: ${QDRANT_COLLECTION:-atlas_docs}
+      EMBED_PROVIDER: ${EMBED_PROVIDER:-huggingface}
+      EMBED_MODEL: ${EMBED_MODEL:-BAAI/bge-small-en-v1.5}
+      EMBED_DIM: ${EMBED_DIM:-384}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-https://ollama.com}
+      OLLAMA_API_KEY: ${OLLAMA_API_KEY:-}
+      OLLAMA_CHAT_MODEL: ${OLLAMA_CHAT_MODEL:-gpt-oss:120b}
+      APP_ENV: production
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - ./data:/app/data
+      - atlas_storage:/app/storage
+      - hf_cache:/app/.cache/hf
+
+volumes:
+  qdrant_data:
+  atlas_storage:
+  hf_cache:

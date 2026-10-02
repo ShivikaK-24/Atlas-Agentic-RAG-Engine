@@ -1,0 +1,17 @@
+# Minimal runtime set: enough to boot the API, the LangGraph agent and the UI
+# using the local (in-process) vector store. Use this if the full
+# requirements.txt is too heavy for your machine or CI runner.
+fastapi==0.115.12
+uvicorn[standard]==0.34.0
+sse-starlette==2.2.1
+pydantic==2.11.3
+pydantic-settings==2.8.1
+httpx==0.28.1
+python-multipart==0.0.20
+langgraph==0.3.29
+langchain-core==0.3.51
+python-dotenv==1.1.0
+rich==13.9.4
+typer==0.15.2
+tenacity==9.0.0
+pytest==8.3.5

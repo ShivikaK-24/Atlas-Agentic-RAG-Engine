@@ -1,0 +1,41 @@
+# ===========================================================================
+# Fly.io alternative to render.yaml.
+#   fly launch --no-deploy && fly secrets set OLLAMA_API_KEY=... && fly deploy
+# ===========================================================================
+app = "atlas-rag"
+primary_region = "sin"
+
+[build]
+  dockerfile = "Dockerfile"
+  [build.args]
+    BUILD_PROFILE = "full"
+
+[env]
+  APP_ENV = "production"
+  APP_PORT = "8000"
+  VECTOR_BACKEND = "qdrant"
+  EMBED_PROVIDER = "huggingface"
+  OLLAMA_BASE_URL = "https://ollama.com"
+  OLLAMA_CHAT_MODEL = "gpt-oss:120b"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    grace_period = "90s"
+    interval = "30s"
+    method = "GET"
+    path = "/api/health"
+    timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "2gb"
+
+[mounts]
+  source = "atlas_storage"
+  destination = "/app/storage"

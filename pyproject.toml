@@ -1,0 +1,21 @@
+[project]
+name = "atlas-rag"
+version = "1.0.0"
+description = "Multi-department agentic RAG engine: LlamaIndex retrieval, LangGraph orchestration, Ollama Cloud generation."
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+exclude = [".venv", "storage", "data"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4"]
+# UP042: StrEnum would work, but `str, Enum` keeps the JSON schema Pydantic
+# emits identical across the 3.11/3.12 split we support.
+ignore = ["E501", "B008", "UP042"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]
