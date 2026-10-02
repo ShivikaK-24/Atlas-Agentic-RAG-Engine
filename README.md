@@ -1,3 +1,5 @@
+> **Team academic project (3 members).** I led the design and build, directing the **Claude Code** agent to implement the system end-to-end. The document corpus is **synthetic** — authored for this project, no real or confidential data.
+
 <div align="center">
 
 # Atlas — Multi-Department Agentic RAG Engine
